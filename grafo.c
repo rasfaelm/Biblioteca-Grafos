@@ -9,6 +9,11 @@
  */
 Grafo *criarGrafo(int ordem){
     Grafo *grafo;
+    grafo->ordem=ordem,
+    grafo->tamanho=0;
+    grafo->matriz=(double**)malloc(ordem*sizeof(double*)); 
+    for(int i = 0; i < ordem; i++){ 
+        grafo->matriz[i]=(double*)malloc(ordem*sizeof(double));}
     /* TODO: implementar. */
     return grafo;
 }
@@ -44,8 +49,22 @@ void liberarGrafo(Grafo *grafo){
  * ...
  */
 Grafo *lerGrafo(const char *nomeArquivo){
-    /* TODO: implementar. */
-    return NULL;
+    FILE *arquivo;
+    int ordem,coluna,linha;  
+    double peso;  
+    arquivo = fopen(nomeArquivo, "r");
+        if (arquivo == NULL) {
+        printf("Erro: Não foi possível abrir o arquivo '%s'.\n", nomeArquivo);
+        return NULL; 
+    }
+    fscanf(arquivo,"%d",&ordem);
+    Grafo *grafo = criarGrafo(ordem);
+    while(fscanf(arquivo,"%d %d %lf",&linha,&coluna,&peso)!=EOF){
+        grafo->matriz[coluna-1][linha-1]=peso;
+        grafo->matriz[linha-1][coluna-1]=peso;
+    }
+    fclose(arquivo);
+    return grafo;
 }
 
 /* Retorna a ordem do grafo. */
@@ -81,8 +100,13 @@ void listarVizinhos(const Grafo *grafo, int vertice){
 
 /* Retorna o grau de um vértice. */
 int obterGrau(const Grafo *grafo, int vertice){
-    /* TODO: implementar. */
-    return 0;
+    int grau = 0;
+    for (int i = 0; i<grafo->ordem; i++){
+        if(grafo->matriz[vertice][i]!=0){
+            grau+=1;
+        }
+    }
+    return grau;
 }
 
 /* Verifica se um vértice é de articulação. */
