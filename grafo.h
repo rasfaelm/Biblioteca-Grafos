@@ -8,11 +8,11 @@ typedef struct {
 } Grafo;
 
 /* Criação e destruição */
-Grafo *criarGrafo(int ordem); 
-void liberarGrafo(Grafo *grafo); 
+Grafo *criarGrafo(int ordem);
+void liberarGrafo(Grafo *grafo);
 
 /* Entrada de dados */
-Grafo *lerGrafo(const char *nomeArquivo); 
+Grafo *lerGrafo(const char *nomeArquivo);
 
 /* Informações básicas */
 int obterOrdem(const Grafo *grafo);
@@ -20,8 +20,8 @@ int obterTamanho(const Grafo *grafo);
 double calcularDensidade(const Grafo *grafo);
 
 /* Vizinhança e grau */
-void listarVizinhos(const Grafo *grafo, int vertice); 
-int obterGrau(const Grafo *grafo, int vertice); 
+void listarVizinhos(const Grafo *grafo, int vertice);
+int obterGrau(const Grafo *grafo, int vertice);
 
 /* Vértices de articulação */
 int ehArticulacao(const Grafo *grafo, int vertice);

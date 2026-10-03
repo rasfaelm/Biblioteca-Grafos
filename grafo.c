@@ -11,8 +11,8 @@ Grafo *criarGrafo(int ordem){
     Grafo *grafo;
     grafo->ordem=ordem,
     grafo->tamanho=0;
-    grafo->matriz=(double**)malloc(ordem*sizeof(double*)); 
-    for(int i = 0; i < ordem; i++){ 
+    grafo->matriz=(double**)malloc(ordem*sizeof(double*));
+    for(int i = 0; i < ordem; i++){
         grafo->matriz[i]=(double*)malloc(ordem*sizeof(double));}
     /* TODO: implementar. */
     return grafo;
@@ -22,7 +22,7 @@ Grafo *criarGrafo(int ordem){
  * Libera toda a memória utilizada pelo grafo.
  */
 void liberarGrafo(Grafo *grafo){
-    
+
     if (grafo == NULL) {
         return;
     }
@@ -50,12 +50,12 @@ void liberarGrafo(Grafo *grafo){
  */
 Grafo *lerGrafo(const char *nomeArquivo){
     FILE *arquivo;
-    int ordem,coluna,linha;  
-    double peso;  
+    int ordem,coluna,linha;
+    double peso;
     arquivo = fopen(nomeArquivo, "r");
         if (arquivo == NULL) {
         printf("Erro: Não foi possível abrir o arquivo '%s'.\n", nomeArquivo);
-        return NULL; 
+        return NULL;
     }
     fscanf(arquivo,"%d",&ordem);
     Grafo *grafo = criarGrafo(ordem);
@@ -89,8 +89,12 @@ int obterTamanho(const Grafo *grafo){
 
 /* Calcula a densidade do grafo. */
 double calcularDensidade(const Grafo *grafo){
-    /* TODO: implementar. */
-    return 0.0;
+    if (grafo == NULL || grafo->ordem < 2) {
+        return 0.0;
+    }
+
+    /* Densidade de grafo não direcionado: 2m / (n(n-1)) */
+    return (2.0 * grafo->tamanho) / ((double)grafo->ordem * (grafo->ordem - 1));
 }
 
 /* Lista os vizinhos de um vértice. */
@@ -120,15 +124,80 @@ void buscaLargura(const Grafo *grafo, int inicio){
     /* TODO: implementar. */
 }
 
+/*
+ * Função auxiliar (Roy): rotula cada vértice com o índice da sua
+ * componente conexa em comp[] e retorna o número de componentes.
+ * Escolhe um vértice ainda não rotulado e propaga o rótulo a todos os
+ * vértices alcançáveis a partir dele. Custo O(n^2) com matriz.
+ */
+static int rotularComponentes(const Grafo *grafo, int *comp){
+    int n = grafo->ordem, k = 0;
+    int *pilha = malloc(n * sizeof(int));
+
+    for (int i = 0; i < n; i++) {
+        comp[i] = -1;
+    }
+
+    for (int s = 0; s < n; s++) {
+        if (comp[s] != -1) {
+            continue;
+        }
+
+        int topo = 0;
+        comp[s] = k;
+        pilha[topo++] = s;
+
+        while (topo > 0) {
+            int u = pilha[--topo];
+            for (int v = 0; v < n; v++) {
+                if (grafo->matriz[u][v] != 0.0 && comp[v] == -1) {
+                    comp[v] = k;
+                    pilha[topo++] = v;
+                }
+            }
+        }
+        k++;
+    }
+
+    free(pilha);
+    return k;
+}
+
 /* Retorna a quantidade de componentes conexas. */
 int contarComponentesConexas(const Grafo *grafo){
-    /* TODO: implementar. */
-    return 0;
+    if (grafo == NULL) {
+        return 0;
+    }
+
+    int *comp = malloc(grafo->ordem * sizeof(int));
+    int k = rotularComponentes(grafo, comp);
+    free(comp);
+    return k;
 }
 
 /* Lista os vértices pertencentes a cada componente conexa. */
 void listarComponentesConexas(const Grafo *grafo){
-    /* TODO: implementar. */
+    if (grafo == NULL) {
+        return;
+    }
+
+    int *comp = malloc(grafo->ordem * sizeof(int));
+    int k = rotularComponentes(grafo, comp);
+
+    printf("Numero de componentes conexas: %d\n", k);
+    for (int c = 0; c < k; c++) {
+        printf("Componente %d: {", c + 1);
+        int primeiro = 1;
+        for (int v = 0; v < grafo->ordem; v++) {
+            if (comp[v] == c) {
+                printf("%s%d", primeiro ? "" : ", ", v + 1);
+                primeiro = 0;
+            }
+        }
+        printf("}\n");
+    }
+
+    free(comp);
 }
 
 /* Verifica se o grafo possui ciclo. */
