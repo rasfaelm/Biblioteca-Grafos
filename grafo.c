@@ -99,7 +99,38 @@ double calcularDensidade(const Grafo *grafo){
 
 /* Lista os vizinhos de um vértice. */
 void listarVizinhos(const Grafo *grafo, int vertice){
-    /* TODO: implementar. */
+
+    if (grafo == NULL) {
+        printf("Grafo invalido.\n");
+        return;
+    }
+
+    if (vertice < 1 || vertice > grafo->ordem) {
+        printf("Vertice invalido.\n");
+        return;
+    }
+
+    vertice--;
+
+    printf("Vizinhos do vertice %d:\n", vertice + 1);
+
+    int encontrou = 0;
+
+    for (int i = 0; i < grafo->ordem; i++) {
+
+        if (grafo->matriz[vertice][i] != 0) {
+
+            printf("%d ", i + 1);
+
+            encontrou = 1;
+        }
+    }
+
+    if (!encontrou) {
+        printf("Nenhum");
+    }
+
+    printf("\n");
 }
 
 /* Retorna o grau de um vértice. */
@@ -115,7 +146,124 @@ int obterGrau(const Grafo *grafo, int vertice){
 
 /* Verifica se um vértice é de articulação. */
 int ehArticulacao(const Grafo *grafo, int vertice){
-    /* TODO: implementar. */
+
+    if (grafo == NULL) {
+        return 0;
+    }
+
+    if (vertice < 1 || vertice > grafo->ordem) {
+        return 0;
+    }
+
+    vertice--;
+
+    int n = grafo->ordem;
+
+    int *visitado = calloc(n, sizeof(int));
+    int *fila = malloc(n * sizeof(int));
+
+    if (visitado == NULL || fila == NULL) {
+
+        free(visitado);
+        free(fila);
+
+        return 0;
+    }
+
+    int componentesAntes = 0;
+
+    int inicio = 0;
+    int fim = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        if (!visitado[i]) {
+
+            componentesAntes++;
+
+            inicio = 0;
+            fim = 0;
+
+            fila[fim] = i;
+            fim++;
+
+            visitado[i] = 1;
+
+            while (inicio < fim) {
+
+                int atual = fila[inicio];
+                inicio++;
+
+                for (int j = 0; j < n; j++) {
+
+                    if (grafo->matriz[atual][j] != 0 &&
+                        !visitado[j]) {
+
+                        visitado[j] = 1;
+
+                        fila[fim] = j;
+                        fim++;
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        visitado[i] = 0;
+    }
+
+    int componentesDepois = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        if (i == vertice) {
+            continue;
+        }
+
+        if (!visitado[i]) {
+
+            componentesDepois++;
+
+            inicio = 0;
+            fim = 0;
+
+            fila[fim] = i;
+            fim++;
+
+            visitado[i] = 1;
+
+            while (inicio < fim) {
+
+                int atual = fila[inicio];
+                inicio++;
+
+                for (int j = 0; j < n; j++) {
+
+                    if (j == vertice) {
+                        continue;
+                    }
+
+                    if (grafo->matriz[atual][j] != 0 &&
+                        !visitado[j]) {
+
+                        visitado[j] = 1;
+
+                        fila[fim] = j;
+                        fim++;
+                    }
+                }
+            }
+        }
+    }
+
+    free(visitado);
+    free(fila);
+
+    if (componentesDepois > componentesAntes) {
+        return 1;
+    }
+
     return 0;
 }
 
@@ -323,7 +471,78 @@ void listarComponentesConexas(const Grafo *grafo){
 
 /* Verifica se o grafo possui ciclo. */
 int possuiCiclo(const Grafo *grafo){
-    /* TODO: implementar. */
+
+    if (grafo == NULL) {
+        return 0;
+    }
+
+    int n = grafo->ordem;
+
+    int *visitado = calloc(n, sizeof(int));
+    int *pai = malloc(n * sizeof(int));
+    int *fila = malloc(n * sizeof(int));
+
+    if (visitado == NULL ||pai == NULL ||fila == NULL) {
+
+        free(visitado);
+        free(pai);
+        free(fila);
+
+        return 0;
+    }
+
+    for (int i = 0; i < n; i++) {
+        pai[i] = -1;
+    }
+
+    for (int i = 0; i < n; i++) {
+
+        if (!visitado[i]) {
+
+            int inicio = 0;
+            int fim = 0;
+
+            fila[fim] = i;
+            fim++;
+
+            visitado[i] = 1;
+
+            while (inicio < fim) {
+
+                int atual = fila[inicio];
+                inicio++;
+
+                for (int j = 0; j < n; j++) {
+
+                    if (grafo->matriz[atual][j] == 0) {
+                        continue;
+                    }
+
+                    if (!visitado[j]) {
+
+                        visitado[j] = 1;
+                        pai[j] = atual;
+
+                        fila[fim] = j;
+                        fim++;
+
+                    } else if (pai[atual] != j) {
+
+                        free(visitado);
+                        free(pai);
+                        free(fila);
+
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+
+    free(visitado);
+    free(pai);
+    free(fila);
+
     return 0;
 }
 
