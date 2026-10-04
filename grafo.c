@@ -121,7 +121,128 @@ int ehArticulacao(const Grafo *grafo, int vertice){
 
 /* Executa busca em largura (BFS). */
 void buscaLargura(const Grafo *grafo, int inicio){
-    /* TODO: implementar. */
+    if (grafo == NULL) {
+        printf("Grafo invalido.\n");
+        return;
+    }
+
+    inicio--;
+
+    if (inicio < 0 || inicio >= grafo->ordem) {
+        printf("Vertice inicial invalido.\n");
+        return;
+    }
+
+    int *visitado = calloc(grafo->ordem, sizeof(int));
+    int *pai = malloc(grafo->ordem * sizeof(int)); 
+    int *fila = malloc(grafo->ordem * sizeof(int));
+
+    if (visitado == NULL || pai == NULL || fila == NULL) {
+        printf("Erro ao alocar memoria.\n");
+
+        free(visitado);
+        free(pai);
+        free(fila);
+
+        return;
+    }
+
+    for (int i = 0; i < grafo->ordem; i++) {
+        pai[i] = -1;
+    }
+
+    int inicioFila = 0;
+    int fimFila = 0;
+
+    fila[fimFila++] = inicio;
+    visitado[inicio] = 1;
+
+    printf("\nBUSCA EM LARGURA \n");
+    printf("Vertice inicial: %d\n", inicio + 1);
+    printf("Sequencia de vertices visitados:\n");
+
+    while (inicioFila < fimFila) {
+
+        int atual = fila[inicioFila++];
+
+        printf("%d ", atual + 1);
+
+        for (int vizinho = 0; vizinho < grafo->ordem; vizinho++) {
+
+            if (grafo->matriz[atual][vizinho] != 0 && !visitado[vizinho]) {
+                visitado[vizinho] = 1;
+                pai[vizinho] = atual;
+                fila[fimFila++] = vizinho;
+            }
+        }
+    }
+
+    printf("\n");
+    printf("\nArestas da arvore de busca em largura:\n");
+
+    int encontrouArvore = 0;
+
+    for (int v = 0; v < grafo->ordem; v++) {
+
+        if (pai[v] != -1) {
+            printf("(%d, %d)\n", pai[v] + 1, v + 1);
+            encontrouArvore = 1;
+        }
+    }
+
+    if (!encontrouArvore) {
+        printf("Nenhuma aresta.\n");
+    }
+
+    printf("\nArestas que nao pertencem a arvore BFS:\n");
+
+    int encontrouNaoArvore = 0;
+
+    for (int u = 0; u < grafo->ordem; u++) {
+
+        for (int v = u + 1; v < grafo->ordem; v++) {
+
+            // Verifica se existe uma aresta entre u e v.
+            if (grafo->matriz[u][v] != 0) {
+
+                int pertenceArvore = (pai[u] == v || pai[v] == u);
+
+                if (!pertenceArvore) {
+
+                    printf("(%d, %d)\n", u + 1, v + 1);
+                    encontrouNaoArvore = 1;
+                }
+            }
+        }
+    }
+
+    if (!encontrouNaoArvore) {
+        printf("Nenhuma aresta.\n");
+    }
+
+    // Verifica se existem vertices que nao foram alcançados.
+    printf("\nVertices nao alcancados a partir de %d:\n", inicio + 1);
+
+    int encontrouNaoAlcancado = 0;
+
+    for (int i = 0; i < grafo->ordem; i++) {
+
+        if (!visitado[i]) {
+            printf("%d ", i + 1);
+            encontrouNaoAlcancado = 1;
+        }
+    }
+
+    if (!encontrouNaoAlcancado) {
+        printf("Nenhum");
+    }
+
+    printf("\n");
+
+    // Libera toda a memoria utilizada pela BFS.
+    free(visitado);
+    free(pai);
+    free(fila);
 }
 
 /*
@@ -208,10 +329,126 @@ int possuiCiclo(const Grafo *grafo){
 
 /* Calcula caminhos mínimos a partir de uma origem. */
 void caminhosMinimos(const Grafo *grafo, int origem){
-    /* TODO: implementar. */
+
+    if (grafo == NULL) {
+        printf("Grafo invalido.\n");
+        return;
+    }
+
+    origem--;
+
+    if (origem < 0 || origem >= grafo->ordem) {
+        printf("Vertice de origem invalido.\n");
+        return;
+    }
+
+    int n = grafo->ordem;
+
+    double *dist = malloc(n * sizeof(double));
+
+    int *anterior = malloc(n * sizeof(int));
+
+    int *visitado = calloc(n, sizeof(int));
+
+    if (dist == NULL || anterior == NULL || visitado == NULL) {
+
+        printf("Erro ao alocar memoria.\n");
+
+        free(dist);
+        free(anterior);
+        free(visitado);
+
+        return;
+    }
+
+    const double INFINITO = 1e308;
+
+    for (int i = 0; i < n; i++) {
+        dist[i] = INFINITO;
+        anterior[i] = -1;
+    }
+
+    dist[origem] = 0.0;
+
+    for (int contador = 0; contador < n; contador++) {
+
+        int atual = -1;
+        double menorDistancia = INFINITO;
+
+        for (int i = 0; i < n; i++) {
+
+            if (!visitado[i] && dist[i] < menorDistancia) {
+                menorDistancia = dist[i];
+                atual = i;
+            }
+        }
+
+        if (atual == -1) {
+            break;
+        }
+
+        visitado[atual] = 1;
+
+        for (int vizinho = 0; vizinho < n; vizinho++) {
+
+            if (grafo->matriz[atual][vizinho] != 0 && !visitado[vizinho]) {
+
+                double peso = grafo->matriz[atual][vizinho];
+
+                if (dist[atual] + peso < dist[vizinho]) {
+                    dist[vizinho] = dist[atual] + peso;
+                    anterior[vizinho] = atual;
+                }
+            }
+        }
+    }
+
+    // Mostra os resultados.
+    printf("Vertice de origem: %d\n\n", origem + 1);
+
+    for (int destino = 0; destino < n; destino++) {
+
+        printf("Destino: %d\n", destino + 1);
+
+        /*
+         * Se a distancia continua infinita, significa que
+         * nao existe caminho entre origem e destino.
+         */
+        if (dist[destino] == INFINITO) {
+
+            printf("Distancia: infinito\n");
+            printf("Caminho: inexistente\n");
+
+        } else {
+
+            printf("Distancia: %.2f\n", dist[destino]);
+            printf("Caminho: ");
+            imprimirCaminho(origem, destino, anterior);
+            printf("\n");
+        }
+
+        printf("\n");
+    }
+
+    free(dist);
+    free(anterior);
+    free(visitado);
 }
 
 /* Imprime um caminho utilizando o vetor de predecessores. */
 void imprimirCaminho(int origem, int destino, const int *anterior){
-    /* TODO: implementar. */
+
+    if (destino == origem) {
+        printf("%d", origem + 1);
+        return;
+    }
+
+    if (anterior[destino] == -1) {
+        printf("inexistente");
+        return;
+    }
+
+    imprimirCaminho(origem, anterior[destino], anterior);
+
+    printf(" -> %d", destino + 1);
 }
