@@ -73,7 +73,6 @@ void liberarGrafo(Grafo *grafo){
 Grafo *lerGrafo(const char *nomeArquivo){
     FILE *arquivo;
     int ordem, coluna, linha, tamanho = 0;  
-    double peso;  
     double peso;
     arquivo = fopen(nomeArquivo, "r");
         if (arquivo == NULL) {
@@ -171,9 +170,6 @@ int obterGrau(const Grafo *grafo, int vertice) {
     vertice--;
 
     int grau = 0;
-    for (int i = 0; i<grafo->ordem; i++){
-        if(grafo->matriz[vertice][i]!=0){
-            grau += 1;
 
     for (int i = 0; i < grafo->ordem; i++) {
         if (grafo->matriz[vertice][i] != 0) {
