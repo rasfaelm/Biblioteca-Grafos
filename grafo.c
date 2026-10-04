@@ -8,13 +8,35 @@
  * A matriz será inicializada com zero.
  */
 Grafo *criarGrafo(int ordem){
-    Grafo *grafo;
-    grafo->ordem=ordem,
-    grafo->tamanho=0;
-    grafo->matriz=(double**)malloc(ordem*sizeof(double*));
-    for(int i = 0; i < ordem; i++){
-        grafo->matriz[i]=(double*)malloc(ordem*sizeof(double));}
-    /* TODO: implementar. */
+    Grafo *grafo = malloc(sizeof(Grafo));
+
+    if (grafo == NULL) {
+        return NULL;
+    }
+
+    grafo->ordem = ordem;
+    grafo->tamanho = 0;
+    grafo->matriz = malloc(ordem * sizeof(double *));
+
+    if (grafo->matriz == NULL) {
+        free(grafo);
+        return NULL;
+    }
+
+    for (int i = 0; i < ordem; i++) {
+        grafo->matriz[i] = calloc(ordem, sizeof(double));
+
+        if (grafo->matriz[i] == NULL) {
+            for (int j = 0; j < i; j++) {
+                free(grafo->matriz[j]);
+            }
+
+            free(grafo->matriz);
+            free(grafo);
+            return NULL;
+        }
+    }
+
     return grafo;
 }
 
@@ -62,6 +84,7 @@ Grafo *lerGrafo(const char *nomeArquivo){
     while(fscanf(arquivo,"%d %d %lf",&linha,&coluna,&peso)!=EOF){
         grafo->matriz[coluna-1][linha-1]=peso;
         grafo->matriz[linha-1][coluna-1]=peso;
+        grafo->tamanho++;
     }
     fclose(arquivo);
     return grafo;
@@ -134,13 +157,25 @@ void listarVizinhos(const Grafo *grafo, int vertice){
 }
 
 /* Retorna o grau de um vértice. */
-int obterGrau(const Grafo *grafo, int vertice){
+int obterGrau(const Grafo *grafo, int vertice) {
+    if (grafo == NULL) {
+        return 0;
+    }
+
+    if (vertice < 1 || vertice > grafo->ordem) {
+        return 0;
+    }
+
+    vertice--;
+
     int grau = 0;
-    for (int i = 0; i<grafo->ordem; i++){
-        if(grafo->matriz[vertice][i]!=0){
-            grau+=1;
+
+    for (int i = 0; i < grafo->ordem; i++) {
+        if (grafo->matriz[vertice][i] != 0) {
+            grau++;
         }
     }
+
     return grau;
 }
 
